@@ -1,0 +1,34 @@
+datatype faceType = KING | QUEEN | JACK;
+datatype cardType = ACE | FACE of faceType | NONFACE of int;
+datatype suitType = SPADSES | HEARTS | DIAMONDS | CLUBS;
+
+type playingCard = cardType * suitType;
+
+
+		fun cycle x = (tl x) @ [(hd x)];
+				
+		fun cycleList (x,n) =
+		if n = 0 then x
+		else cycleList (cycle(x),(n-1));
+
+fun isAce (ACE, suit) = true
+					| isAce (FACE face, suit) = false
+					| isAce (NONFACE value, suit) = false;
+
+fun countAces (pHand) =
+					let
+						val length = length pHand
+						
+						fun countAce(pHand,ln,n) =
+							let
+							val test = print((Int.toString n) ^ "\n")
+							in
+							if ln = 0 then n
+							else if (isAce(hd pHand)) then countAce(cycle pHand,ln-1,n+1)
+							else countAce(cycle pHand,ln-1,n)
+							end;
+					in
+						countAce(pHand,length,0);
+					end;
+					
+ val hand = [(ACE,CLUBS),(ACE,CLUBS),(ACE,CLUBS)];

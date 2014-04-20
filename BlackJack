@@ -9,6 +9,9 @@ datatype suitType = SPADSES | HEARTS | DIAMONDS | CLUBS;
 
 type playingCard = cardType * suitType;
 
+val testHand = [(FACE QUEEN,HEARTS),(FACE KING,DIAMONDS)];
+
+
 val deck = [
 (*
 (NONFACE 2,SPADSES),(NONFACE 2,HEARTS),(NONFACE 2,DIAMONDS),(NONFACE 2,CLUBS),
@@ -20,8 +23,9 @@ val deck = [
 (NONFACE 8,SPADSES),(NONFACE 8,HEARTS),(NONFACE 8,DIAMONDS),(NONFACE 8,CLUBS),
 (NONFACE 9,SPADSES),(NONFACE 9,HEARTS),(NONFACE 9,DIAMONDS),(NONFACE 9,CLUBS),
 (NONFACE 10,SPADSES),(NONFACE 10,HEARTS),(NONFACE 10,DIAMONDS),(NONFACE 10,CLUBS),
-*)
+
 (FACE JACK,SPADSES),(FACE JACK,HEARTS),(FACE JACK,DIAMONDS),(FACE JACK,CLUBS),
+*)
 (FACE QUEEN,SPADSES),(FACE QUEEN,HEARTS),(FACE QUEEN,DIAMONDS),(FACE QUEEN,CLUBS),
 (FACE KING,SPADSES),(FACE KING,HEARTS),(FACE KING,DIAMONDS),(FACE KING,CLUBS),
 
@@ -77,36 +81,52 @@ fun getHandValue hand =
 		fun cycleList (x,n) =
 		if n = 0 then x
 		else cycleList (cycle(x),(n-1));
-		
-		fun isAce (ACE, suit) = true
-			| isAce (FACE face, suit) = false
-			| isAce (NONFACE value, suit) = false;
 				
-		fun modHand (pHand, n) =
-			
-			if (isAce(hd pHand)) then cycle pHand
-			else (if n = 0 then pHand
-				else modHand(cycle(pHand), n-1));			
+		fun hasAce (pHand) = 
+			let
+				fun isAce (ACE, suit) = true
+					| isAce (FACE face, suit) = false
+					| isAce (NONFACE value, suit) = false;
+						
+				fun countAces (pHand) =
+					let			
+						fun countAce(pHand,ln,n) =
+							let
+							val test = print((Int.toString n) ^ "\n")
+							in
+							if ln = 0 then n
+							else if (isAce(hd pHand)) then countAce(cycle pHand,ln-1,n+1)
+							else countAce(cycle pHand,ln-1,n)
+							end;
+					in
+						countAce(pHand,l,0);
+					end;
+			in
+				countAces(pHand);
+			end;			
 			
 		fun getCardValue (ACE, suit) = 11
-			| getCardValue (FACE face, suit) = 10
+			| getCardValue (FACE face, suit) = 10
 			| getCardValue (NONFACE value, suit) = value;
 			
 		fun getTotalCount (tHand) = 
 		if l = 1 then getCardValue (hd tHand)
 		else (getHandValue([(hd tHand)]) + getHandValue (tl tHand));
 		
-		fun softAce (aceHand,l, count) =
+		fun softAce (aceHand, count) =
 			let
-				val lastCard = cycleList(aceHand,l-1)
-				val hasAce = isAce(hd lastCard)
+				val numAce = hasAce aceHand
+				fun softenAce (count, aCount) =
+					if count < 22 then count
+					else (if numAce > 0 then softenAce(count-10,aCount-1)
+						else count)
 			in
-				if count < 22 then count
-				else (if hasAce then count-10
-					else count)
+				softenAce(count, numAce);	
 			end;
+			
+		val playerCount = getTotalCount(hand);
 	in	
-		softAce(modHand(hand,l),l,getTotalCount(hand));				
+		softAce(hand,playerCount);				
 	end;
 
 fun showHands (h1,h2) =
