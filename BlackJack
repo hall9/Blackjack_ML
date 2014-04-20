@@ -92,6 +92,7 @@ fun showHands (h1,h2) =
 				showHand(tl hand) )
 			end;
 	in
+		print(" - ******* -\n");
 		print("Dealers Cards: \n");
 		print("Hole Card\n");
 		showHand(tl h2);
@@ -100,18 +101,79 @@ fun showHands (h1,h2) =
 		showHand(h1);
 		print("Count: " ^ (Int.toString playerCount) ^ "\n");
 	end;
+
+fun showEndGame (playersHand,dealerHand,status) = 
+	let 
+		val playerCount = getHandValue(playersHand);
+		val dealerCount = getHandValue(dealerHand);
+		
+		fun showHand hand = 
+			let
+				val l = length hand
+			in
+				if l = 1 then showCard(hd hand)
+				else (
+				showHand([(hd hand)]);
+				showHand(tl hand) )
+			end;
+	in
+		print("\n\n -- Game Ended --\n");
+		
+		print("Dealers Cards: \n");
+		showHand(dealerHand);
+		print("Count: " ^ (Int.toString dealerCount) ^ "\n");
+		
+		print("\nPlayers Cards: \n");
+		showHand(playersHand);
+		print("Count: " ^ (Int.toString playerCount) ^ "\n");
+		
+		print(status ^ "\n");
 	
-fun dealersTurn (playersHand,dealerHand, sDeck) = 
-print("Hello");
+	end;
+		
+fun endGame (playersHand,dealerHand) =
+	let
+		val playerCount = getHandValue(playersHand);
+		val dealerCount = getHandValue(dealerHand);
+	in
+		(* print("\nCounts: " ^ (Int.toString playerCount) ^ " - "^ (Int.toString dealerCount) ^ "\n"); *)
+		if playerCount > 21 then showEndGame(playersHand,dealerHand,"Bust, You Lose!")
+		else if playerCount = 21 then showEndGame(playersHand,dealerHand,"BlackJack! YOU WIN with 21!")
+		else if dealerCount > 21 then showEndGame(playersHand,dealerHand,"YOU WIN, Dealer Bust.")
+		else if playerCount > dealerCount then showEndGame(playersHand,dealerHand,"YOU Win! Beat the Dealer.")
+		else if playerCount < dealerCount then showEndGame(playersHand,dealerHand,"YOU LOST! Dealer Beat you.")
+		else showEndGame(playersHand,dealerHand,"Push (aks Tie)");
+	end;
+
+fun dealersTurn (playersHand,dealerHand,sDeck) = 
+	let
+		val shuffled = shuffle(sDeck);
+		val dealerCount = getHandValue(dealerHand);
+	in
+		(* print("Dealer's Turn: " ^ (Int.toString dealerCount) ^ "\n"); *)
+		if dealerCount < 17 then dealersTurn(playersHand,dealCard(dealerHand,(hd shuffled)),discard(shuffled))
+		else endGame(playersHand,dealerHand);
+	end;
 
 fun playerTurn (playerHand,dealerHand,sDeck) = 
 	let
-		val inputString = getInput "Hit(h) or Stay(s)?";
-		val shuffled = shuffle(sDeck);
+		val playerCount = getHandValue(playerHand);
+		
+		fun playerTurns (playerHand,dealerHand,sDeck) =
+			let
+				val shuffled = shuffle(sDeck);
+				val inputString = getInput "Hit(h) or Stay(s)?";
+			in
+				if inputString = "h" then playerTurn(dealCard(playerHand,(hd shuffled)), dealerHand, discard(shuffled))
+				else if inputString = "s" then dealersTurn(playerHand,dealerHand, shuffled)
+				else ( print("invalid input: " ^ inputString ^ "h - Hit, s - Stay\n"); playerTurn(playerHand,dealerHand,shuffled))
+			end;
 	in
-		if inputString = "h" then playerTurn(dealCard(playerHand,(hd shuffled)), dealerHand, discard(shuffled))
-		else if inputString = "s" then dealersTurn(playerHand,dealerHand, sDeck)
-		else print("invalid input" ^ inputString ^ "\n"); 
+		showHands(playerHand,dealerHand);
+		
+		if playerCount < 21 then playerTurns(playerHand,dealerHand,sDeck)
+		else dealersTurn(playerHand,dealerHand,sDeck);
+	
 	end;
 
 fun playing w = 
@@ -121,16 +183,16 @@ fun playing w =
 		val shuffled = shuffle(deck);		
 		val playerHand = dealCard(playerHand,(hd shuffled));
 		val shuffled = shuffle(discard(shuffled));
-		val dealerHand = dealCard(dealerHand,(hd shuffled));
+		val dealerHand = dealCard(dealerHand,(hd shuffled));
 		val shuffled = shuffle(discard(shuffled));
 		val playerHand = dealCard(playerHand,(hd shuffled));
 		val shuffled = shuffle(discard(shuffled));
 		val dealerHand = dealCard(dealerHand,(hd shuffled));
 		val shuffled = shuffle(discard(shuffled));			
 	in
-		showHands(playerHand,dealerHand);
-		playerTurn(playerHand,dealerHand,shuffled);			
+		playerTurn(playerHand,dealerHand,shuffled);		
 	end;
+
     
 val startPlaying = playing "yes";
 	
