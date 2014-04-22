@@ -3,6 +3,12 @@
 ## Mission
 Create BlackJack using ALICE ML.
 
+## How TO PLAY 
+1. Run within Alice ML
+2. Game Starts (Cards are dealt and displayed)
+3. Player's Turn First - Hit('h') or Stay('s')
+4. Game Ended View will display at the end of the game.
+
 ## Requirements:
 The program should represent cards as values of specific types and the deck as a list of those cards.
 The computer should be able to "shuffle" and deal "random" cards to the players.
@@ -19,7 +25,7 @@ The game should continue though at least one complete "hand" of the game.
 
 1. Player Goes first.
 2. Player can Hit or Stay on the hand.
- ..* You shouldn't worry about "splits" and "double downs"...
+ ..* You shouldn't worry about "splits" and "double downs"
 3. Dealer next, hits on 16 or below
  
 **Also note:** Feel free to use ML's "Basis Functions" (the standard library) where appropriate.**DO NOT USE Array functions or References**. This is simply because the goal of this project is to teach "Functional Programming". ML, while primarily a functional language, it is not technically a "pure functional language", as it offers both Functional and Imperative constructs. Arrays and References are examples of those imperative constructs. 
