@@ -1,14 +1,21 @@
+(*
+	BLACKJACK - ALICE ML
+	Written By: Alex Hall
+	DATE: 04/22/2014
+*)
+
 import structure Rand from "x-alice:/lib/system/Rand";
 
 val stdin = TextIO.stdIn
 val readLine = TextIO.inputLine
 
-datatype faceType = KING | QUEEN | JACK;
-datatype cardType = ACE | FACE of faceType | NONFACE of int;
-datatype suitType = SPADSES | HEARTS | DIAMONDS | CLUBS;
+(* Define the card types and the playing card object *) 
+datatype face_type = KING | QUEEN | JACK;
+datatype card_type = ACE | FACE of face_type | NONFACE of int;
+datatype suit_type = SPADSES | HEARTS | DIAMONDS | CLUBS;
+type playing_card = card_type * suit_type;
 
-type playingCard = cardType * suitType;
-
+(* Define the whole deck of playing cards *)
 val deck = [
 (NONFACE 2,SPADSES),(NONFACE 2,HEARTS),(NONFACE 2,DIAMONDS),(NONFACE 2,CLUBS),
 (NONFACE 3,SPADSES),(NONFACE 3,HEARTS),(NONFACE 3,DIAMONDS),(NONFACE 3,CLUBS),
@@ -19,11 +26,9 @@ val deck = [
 (NONFACE 8,SPADSES),(NONFACE 8,HEARTS),(NONFACE 8,DIAMONDS),(NONFACE 8,CLUBS),
 (NONFACE 9,SPADSES),(NONFACE 9,HEARTS),(NONFACE 9,DIAMONDS),(NONFACE 9,CLUBS),
 (NONFACE 10,SPADSES),(NONFACE 10,HEARTS),(NONFACE 10,DIAMONDS),(NONFACE 10,CLUBS),
-
 (FACE JACK,SPADSES),(FACE JACK,HEARTS),(FACE JACK,DIAMONDS),(FACE JACK,CLUBS),
 (FACE QUEEN,SPADSES),(FACE QUEEN,HEARTS),(FACE QUEEN,DIAMONDS),(FACE QUEEN,CLUBS),
 (FACE KING,SPADSES),(FACE KING,HEARTS),(FACE KING,DIAMONDS),(FACE KING,CLUBS),
-
 (ACE,SPADSES),(ACE,HEARTS),(ACE,DIAMONDS),(ACE,CLUBS)
 ];
 
@@ -36,6 +41,7 @@ fun getInput prompt =
    	 Substring.string(sansEOL);
     end;
 
+(* Shifts the deck a random number of times *)	
 fun shuffle x =
 	let
 		val random = Rand.rand() mod 52;
@@ -50,16 +56,20 @@ fun shuffle x =
 		cycleList(x,random)
 	end;
 
+(* Adds a card to the end of a hand list and returns it*)
 fun dealCard (hand,card) = hand @ [card];
 
+(* Removes the head card from the given deck list *)
 fun discard d = (tl d);
 
+(* Converts suit type to readable string *)
 fun suitString suit = case suit of
     SPADSES => "Spades" |
     HEARTS => "Hearts" |
     DIAMONDS => "Diamonds" |
     CLUBS => "Clubs";
 
+(* Prints a give card to the I/O console *)
 fun showCard (ACE, suit) = print ("- ACE of " ^ suitString suit ^ "\n")
 	| showCard (FACE face, suit) = (case face of
           KING => print ("- KING of " ^ suitString suit ^ "\n") |
@@ -67,10 +77,12 @@ fun showCard (ACE, suit) = print ("- ACE of " ^ suitString suit ^ "\n")
           JACK => print ("- JACK of " ^ suitString suit ^ "\n"))
         | showCard (NONFACE nfvalue, suit) = print ("- " ^ (Int.toString nfvalue) ^ " of " ^ suitString suit ^ "\n");
 
+(* Given a hand, this function returns the hand count *)
 fun getHandValue hand = 
 	let
 		val l = length hand
-				
+		
+		(* Given a hand, returns the number of Aces within it *)
 		fun hasAce (pHand) = 
 			let
 				fun cycle x = (tl x) @ [(hd x)];
@@ -79,10 +91,12 @@ fun getHandValue hand =
 					if n = 0 then x
 					else cycleList (cycle(x),(n-1));
 				
+				(* Given a card, returns true if its an ACE other false *)
 				fun isAce (ACE, suit) = true
 					| isAce (FACE face, suit) = false
 					| isAce (NONFACE value, suit) = false;
-						
+				
+				(* Given a hand, Count Aces *)
 				fun countAces (pHand) =
 					let			
 						fun countAce(pHand,ln,n) =
@@ -95,11 +109,13 @@ fun getHandValue hand =
 			in
 				countAces(pHand);
 			end;			
-			
+		
+		(* Given a card, return the value of that card *)
 		fun getCardValue (ACE, suit) = 11
 			| getCardValue (FACE face, suit) = 10
 			| getCardValue (NONFACE value, suit) = value;
-			
+		
+		(* Given a hand, gets the hard count without soft Aces *)  
 		fun getTotalCount (tHand) = 
 			let 
 				val ln = length tHand
@@ -109,6 +125,7 @@ fun getHandValue hand =
 				else 0
 			end;
 		
+		(* Given a hand and count, if hand contains ace(s) and count is above 22 softens the aces *)
 		fun softAce (aceHand, count) =
 			let	
 				val numAce = hasAce hand;
@@ -124,6 +141,7 @@ fun getHandValue hand =
 		softAce(hand,getTotalCount(hand));
 	end;
 
+(* Given two hands prints the current game state *)
 fun showHands (h1,h2) =
 	let
 		val playerCount = getHandValue(h1)
@@ -140,7 +158,7 @@ fun showHands (h1,h2) =
 	in
 		print("---> Player's Turn\n\n");
 		print("Dealers Cards: \n");
-		print("- Hole Card\n");
+		print("- Hole Card\n"); (* player is unable to see dealer's uncovered card *)
 		showHand(tl h2);
 		
 		print("\nPlayers Cards: \n");
@@ -148,6 +166,7 @@ fun showHands (h1,h2) =
 		print("#Count: " ^ (Int.toString playerCount) ^ "\n");
 	end;
 
+(* Given both Player and Dealer hands, prints them all uncovered *)
 fun showEndGame (playersHand,dealerHand,status) = 
 	let 
 		val playerCount = getHandValue(playersHand);
@@ -176,7 +195,8 @@ fun showEndGame (playersHand,dealerHand,status) =
 		
 		print(status ^ "\n");
 	end;
-		
+
+(* Given both Player and Dealer hands, determines winner and loser based on count *)
 fun endGame (playersHand,dealerHand) =
 	let
 		val playerCount = getHandValue(playersHand);
@@ -190,6 +210,7 @@ fun endGame (playersHand,dealerHand) =
 		else showEndGame(playersHand,dealerHand,"Push (aka Tie)");
 	end;
 
+(* Given both Player and Dealer hands and current deck, dealer's turn and hits on 16 or less otherwise stays *)
 fun dealersTurn (playerHand,dealerHand,sDeck) = 
 	let
 		val shuffled = shuffle(sDeck);
@@ -199,6 +220,7 @@ fun dealersTurn (playerHand,dealerHand,sDeck) =
 		else endGame(playerHand,dealerHand);
 	end;
 
+(* Given both Player and Dealer hands and current deck, Player's turn and has the option to hit or stay, if bust or 21 auto ends turn *)
 fun playerTurn (playerHand,dealerHand,sDeck) = 
 	let
 		val playerCount = getHandValue(playerHand);
@@ -220,6 +242,7 @@ fun playerTurn (playerHand,dealerHand,sDeck) =
 	
 	end;
 
+(* Sets up the start of a new game *)
 fun playing w = 
 	let		
 		val playerHand = []
@@ -239,7 +262,6 @@ fun playing w =
 		print(" ******************\n\n");
 		playerTurn(playerHand,dealerHand,shuffled);		
 	end;
-
-    
-val startPlaying = playing "yes";
 	
+(* Starts the Game *)
+val startPlaying = playing "yes";
