@@ -1,6 +1,6 @@
 (*
 	BLACKJACK - ALICE ML
-	Written By: Alex Hall
+	Written By: Alex Hall & Evan Lipshultz
 	DATE: 04/22/2014
 *)
 
@@ -12,24 +12,24 @@ val readLine = TextIO.inputLine
 (* Define the card types and the playing card object *) 
 datatype face_type = KING | QUEEN | JACK;
 datatype card_type = ACE | FACE of face_type | NONFACE of int;
-datatype suit_type = SPADSES | HEARTS | DIAMONDS | CLUBS;
+datatype suit_type = SPADES | HEARTS | DIAMONDS | CLUBS;
 type playing_card = card_type * suit_type;
 
 (* Define the whole deck of playing cards *)
 val deck = [
-(NONFACE 2,SPADSES),(NONFACE 2,HEARTS),(NONFACE 2,DIAMONDS),(NONFACE 2,CLUBS),
-(NONFACE 3,SPADSES),(NONFACE 3,HEARTS),(NONFACE 3,DIAMONDS),(NONFACE 3,CLUBS),
-(NONFACE 4,SPADSES),(NONFACE 4,HEARTS),(NONFACE 4,DIAMONDS),(NONFACE 4,CLUBS),
-(NONFACE 5,SPADSES),(NONFACE 5,HEARTS),(NONFACE 5,DIAMONDS),(NONFACE 5,CLUBS),
-(NONFACE 6,SPADSES),(NONFACE 6,HEARTS),(NONFACE 6,DIAMONDS),(NONFACE 6,CLUBS),
-(NONFACE 7,SPADSES),(NONFACE 7,HEARTS),(NONFACE 7,DIAMONDS),(NONFACE 7,CLUBS),
-(NONFACE 8,SPADSES),(NONFACE 8,HEARTS),(NONFACE 8,DIAMONDS),(NONFACE 8,CLUBS),
-(NONFACE 9,SPADSES),(NONFACE 9,HEARTS),(NONFACE 9,DIAMONDS),(NONFACE 9,CLUBS),
-(NONFACE 10,SPADSES),(NONFACE 10,HEARTS),(NONFACE 10,DIAMONDS),(NONFACE 10,CLUBS),
-(FACE JACK,SPADSES),(FACE JACK,HEARTS),(FACE JACK,DIAMONDS),(FACE JACK,CLUBS),
-(FACE QUEEN,SPADSES),(FACE QUEEN,HEARTS),(FACE QUEEN,DIAMONDS),(FACE QUEEN,CLUBS),
-(FACE KING,SPADSES),(FACE KING,HEARTS),(FACE KING,DIAMONDS),(FACE KING,CLUBS),
-(ACE,SPADSES),(ACE,HEARTS),(ACE,DIAMONDS),(ACE,CLUBS)
+(NONFACE 2,SPADES),(NONFACE 2,HEARTS),(NONFACE 2,DIAMONDS),(NONFACE 2,CLUBS),
+(NONFACE 3,SPADES),(NONFACE 3,HEARTS),(NONFACE 3,DIAMONDS),(NONFACE 3,CLUBS),
+(NONFACE 4,SPADES),(NONFACE 4,HEARTS),(NONFACE 4,DIAMONDS),(NONFACE 4,CLUBS),
+(NONFACE 5,SPADES),(NONFACE 5,HEARTS),(NONFACE 5,DIAMONDS),(NONFACE 5,CLUBS),
+(NONFACE 6,SPADES),(NONFACE 6,HEARTS),(NONFACE 6,DIAMONDS),(NONFACE 6,CLUBS),
+(NONFACE 7,SPADES),(NONFACE 7,HEARTS),(NONFACE 7,DIAMONDS),(NONFACE 7,CLUBS),
+(NONFACE 8,SPADES),(NONFACE 8,HEARTS),(NONFACE 8,DIAMONDS),(NONFACE 8,CLUBS),
+(NONFACE 9,SPADES),(NONFACE 9,HEARTS),(NONFACE 9,DIAMONDS),(NONFACE 9,CLUBS),
+(NONFACE 10,SPADES),(NONFACE 10,HEARTS),(NONFACE 10,DIAMONDS),(NONFACE 10,CLUBS),
+(FACE JACK,SPADES),(FACE JACK,HEARTS),(FACE JACK,DIAMONDS),(FACE JACK,CLUBS),
+(FACE QUEEN,SPADES),(FACE QUEEN,HEARTS),(FACE QUEEN,DIAMONDS),(FACE QUEEN,CLUBS),
+(FACE KING,SPADES),(FACE KING,HEARTS),(FACE KING,DIAMONDS),(FACE KING,CLUBS),
+(ACE,SPADES),(ACE,HEARTS),(ACE,DIAMONDS),(ACE,CLUBS)
 ];
 
 fun getInput prompt =
@@ -64,7 +64,7 @@ fun discard d = (tl d);
 
 (* Converts suit type to readable string *)
 fun suitString suit = case suit of
-    SPADSES => "Spades" |
+    SPADES => "Spades" |
     HEARTS => "Hearts" |
     DIAMONDS => "Diamonds" |
     CLUBS => "Clubs";
@@ -115,7 +115,7 @@ fun getHandValue hand =
 			| getCardValue (FACE face, suit) = 10
 			| getCardValue (NONFACE value, suit) = value;
 		
-		(* Given a hand, gets the hard count without soft Aces *)  
+		(* Given a hand, gets the hard count without soft Aces *)  
 		fun getTotalCount (tHand) = 
 			let 
 				val ln = length tHand
@@ -157,7 +157,7 @@ fun showHands (h1,h2) =
 			end;
 	in
 		print("---> Player's Turn\n\n");
-		print("Dealers Cards: \n");
+		print("Dealers Cards: \n");
 		print("- Hole Card\n"); (* player is unable to see dealer's uncovered card *)
 		showHand(tl h2);
 		
@@ -203,7 +203,7 @@ fun endGame (playersHand,dealerHand) =
 		val dealerCount = getHandValue(dealerHand);
 	in
 		if playerCount > 21 then showEndGame(playersHand,dealerHand,"BUST! You Lose!")
-		else if playerCount = 21 then showEndGame(playersHand,dealerHand,"BlackJack! YOU WIN with 21!")
+		else if playerCount = 21 then showEndGame(playersHand,dealerHand,"YOU WIN with 21!")
 		else if dealerCount > 21 then showEndGame(playersHand,dealerHand,"YOU WIN, Dealer Bust.")
 		else if playerCount > dealerCount then showEndGame(playersHand,dealerHand,"YOU Win! Beat the Dealer.")
 		else if playerCount < dealerCount then showEndGame(playersHand,dealerHand,"YOU LOST! Dealer Beat you.")
@@ -215,7 +215,7 @@ fun dealersTurn (playerHand,dealerHand,sDeck) =
 	let
 		val shuffled = shuffle(sDeck);
 		val dealerCount = getHandValue(dealerHand);
-	in
+	in
 		if dealerCount < 17 then dealersTurn(playerHand,dealCard(dealerHand,(hd shuffled)),discard(shuffled))
 		else endGame(playerHand,dealerHand);
 	end;
@@ -236,7 +236,7 @@ fun playerTurn (playerHand,dealerHand,sDeck) =
 				else ( print("invalid input: " ^ inputString ^ "h - Hit, s - Stay\n"); playerTurn(playerHand,dealerHand,shuffled))
 			end;
 	in	
-		if playerCount < 21 then (showHands(playerHand,dealerHand); playerTurns(playerHand,dealerHand,sDeck))
+		if playerCount < 21 then (showHands(playerHand,dealerHand); playerTurns(playerHand,dealerHand,sDeck))
 		else if playerCount > 21 then endGame(playerHand,dealerHand)
 		else dealersTurn(playerHand,dealerHand,sDeck);
 	
